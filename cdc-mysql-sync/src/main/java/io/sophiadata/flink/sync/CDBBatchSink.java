@@ -130,16 +130,8 @@ public class CDBBatchSink extends RichSinkFunction<Event> {
         }
         final Record rec = new Record((DataChangeEvent) event);
         batch.add(rec);
-        // Flush whenever the batch fills up, when the timer interval has elapsed, or
-        // when the batch already has pending rows and a new event arrives. The last
-        // condition is important for snapshot-only loads where events arrive in a tight
-        // burst and then stop — without it, the trailing 1-2 records sit in the batch
-        // until the next event (which never comes) or until checkpoint close (when the
-        // JDBC connection may already be torn down). The MySQL JDBC driver still batches
-        // the resulting SQL internally, so per-event flushes are cheap.
         if (batch.size() >= batchSize
-                || System.currentTimeMillis() - lastFlush >= batchIntervalMs
-                || batch.size() > 0) {
+                || System.currentTimeMillis() - lastFlush >= batchIntervalMs) {
             flush();
         }
     }
